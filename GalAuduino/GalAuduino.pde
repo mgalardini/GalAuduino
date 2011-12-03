@@ -1,6 +1,7 @@
 // Auduino, the Lo-Fi granular synthesiser
 //
 // by Peter Knight, Tinker.it http://tinker.it
+// (with some hacks by galactus)
 //
 // Help:      http://code.google.com/p/tinkerit/wiki/Auduino
 // More help: http://groups.google.com/group/auduino
@@ -20,11 +21,14 @@
 // 8 Apr 2009: Added support for ATmega1280 boards (Arduino Mega)
 
 // Added by galactus on November 2011:
+// On Arduino UNO the sound is coming out from pin 3 and 11
 // A button to mute the whole thing (and a led to signal it)
 // A potenziometer to switch from steady state to beat-box state, with different frequencies
 //   (the same led as the "mute" one will blink to show the beat speed)
 // A button to insert some pauses when the beat-box mode is on (and a led to signal it)
-//  the rythm is the following: two beats, pause, three beats, pause, three beats, pause, two beats, pause
+//  the rythm is the following: ..-...-...-..- (. = beat, - = pause)
+// The various syncs are borrowed from Dave's auduino (http://blog.lewissykes.info/daves-auduino/)
+// Just uncomment the one you like
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -320,6 +324,12 @@ void loop() {
       }
       digitalWrite(LED_MUTE, LOW);
     }
+    if (rythm == 1){
+      if(tap == 2 || tap == 6 || tap == 10 || tap == 13){
+        digitalWrite(LED_SWTCH, LOW);
+      }
+      else{digitalWrite(LED_SWTCH, HIGH);}
+    }
     delay(oscillatorFreq);
   }
   
@@ -337,7 +347,7 @@ void loop() {
   
   oscillatorFreq = analogRead(OSCILLATOR) / 8;
   if (oscillatorFreq > 24){
-    oscillatorFreq += 40;
+    oscillatorFreq += 5;
     if (oscillatorFreq > 165){
       oscillatorFreq = 165;
     }
@@ -353,12 +363,7 @@ void loop() {
 }
 
 SIGNAL(PWM_INTERRUPT)
-{
-  // Do nothing if we are in the mute state or making the beat box
-  if (mute == 1 || beat ==1){
-    return;
-  }
-  
+{ 
   uint8_t value;
   uint16_t output;
 
@@ -397,6 +402,10 @@ SIGNAL(PWM_INTERRUPT)
 
   // Do nothing if there is a pause scheduled
   if(tap == 2 || tap == 6 || tap == 10 || tap == 13){
+    return;
+  }
+  // Do nothing if we are in the mute state or making the beat box
+  if (mute == 1 || beat ==1){
     return;
   }
 
