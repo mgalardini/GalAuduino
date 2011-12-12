@@ -26,7 +26,7 @@
 // A potenziometer to switch from steady state to beat-box state, with different frequencies
 //   (the same led as the "mute" one will blink to show the beat speed)
 // A button to insert some pauses when the beat-box mode is on (and a led to signal it)
-//  the rythm is the following: ..-...-...-..- (. = beat, - = pause)
+//  the rythm is the following: ..-...-...-..- (. = beat, - = max value)
 // The various syncs are borrowed from Dave's auduino (http://blog.lewissykes.info/daves-auduino/)
 // Just uncomment the one you like
 
@@ -334,6 +334,10 @@ void loop() {
   }
   
   syncPhaseInc = mapminorPentatonic(analogRead(SYNC_CONTROL));
+  // Rythm!
+  if(tap == 2 || tap == 6 || tap == 10 || tap == 13){
+    syncPhaseInc = 1023;
+  }
   //syncPhaseInc = mapmajorPentatonic(analogRead(SYNC_CONTROL));
   //syncPhaseInc = mapminorDiatonic(analogRead(SYNC_CONTROL));
   //syncPhaseInc = mapmajorDiatonic(analogRead(SYNC_CONTROL));
@@ -400,10 +404,6 @@ SIGNAL(PWM_INTERRUPT)
   output >>= 9;
   if (output > 255) output = 255;
 
-  // Do nothing if there is a pause scheduled
-  if(tap == 2 || tap == 6 || tap == 10 || tap == 13){
-    return;
-  }
   // Do nothing if we are in the mute state or making the beat box
   if (mute == 1 || beat ==1){
     return;
