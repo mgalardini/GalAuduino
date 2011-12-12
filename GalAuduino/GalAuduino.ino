@@ -305,6 +305,7 @@ void loop() {
        tap = 0;
        digitalWrite(LED_SWTCH, LOW);
      }
+     delay(300);
    }
    oldButton = nowButton;
   
